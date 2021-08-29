@@ -1,53 +1,37 @@
-import numpy as np
-import pandas as pd
-from sklearn.linear_model import LinearRegression
+from core import get_training_data, predict_price, train_model
 
-def convert_to_sqft(str):
-    tokens = str.split(' - ')
-    if len(tokens) == 2:
-        return (float(tokens[0]) + float(tokens[1])) / 2
-    try:
-        return float(tokens[0])
-    except Exception:
-        return np.NAN
+def print_separator():
+    print("-------------------------")
 
-def convert_to_num(num):
-    tokens = str(num).split(' ')
-    return float(tokens[0])
+def get_user_option():
+    print("Enter 'P' to Predict Price\nEnter 'H' to help\nEnter 'Q' to Quit")
+    option = input("Enter Option: ").strip()
+    if option != 'Q' and option != 'H' and option != 'P':
+        print("Invalid Option, Please enter a valid option")
+        return get_user_option()
+    print_separator()
+    return option
 
-def train_model(X, Y):
-    regression = LinearRegression()
-    regression.fit(X, Y)
-    return regression
+def print_help():
+    print("""___HELP DOCUMENTATION___""")
 
-def get_training_data():
-    dataframe = pd.read_csv("./Bengaluru_House_Data.csv")
-    df = dataframe.drop(columns=["area_type", "balcony", "society", "availability"], axis='columns')
-    df['total_sqft'] = df['total_sqft'].apply(convert_to_sqft)
-    df['size'] = df['size'].apply(convert_to_num)
-    locations = pd.get_dummies(df["location"])
-    df_merge = pd.concat([df.drop(columns=["location"]), locations], axis='columns')
-    df_merge = df_merge.drop(columns=["Unnamed: 9"], axis='columns')
-    df_merge = df_merge.dropna()
-    X = df_merge.drop(['price'], axis='columns')
-    Y = df_merge['price']
-    return X, Y
-
-def predict_price(regression, X, location, bhk, total_sqft, bath):
-    location_index = np.where(X.columns == location)[0][0]
-    x = np.zeros(len(X.columns))
-    x[0] = bhk
-    x[1] = total_sqft
-    x[2] = bath
-    if location_index >= 0:
-        x[location_index] = 1
-    return regression.predict([x])[0]
+def loop(X, regression):
+    while True:
+        print_separator()
+        option = get_user_option()
+        if option == 'H':
+            print_help()
+        if option == 'Q':
+            return
+        if option == 'P':
+            price = predict_price(regression, X, "Koramangala", 2, 1000, 1)
+            print(price)
 
 def main():
+    print("Training Model ...")
     X, Y = get_training_data()
     regression = train_model(X, Y)
-
-    price = predict_price(regression, X, "Koramangala", 2, 1000, 1)
-    print(price)
+    print("Training Completed")
+    loop(X, regression)
 
 main()
