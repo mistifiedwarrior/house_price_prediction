@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask, jsonify, request
 from flask_cors import CORS, cross_origin
 
@@ -43,4 +45,5 @@ def predict_house_price():
     return jsonify({"price": price})
 
 if __name__ == '__main__':
-    app.run()
+    port = int(os.environ.get('PORT', 33507))
+    app.run(port=port)
