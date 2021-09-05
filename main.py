@@ -1,5 +1,3 @@
-import os
-
 from flask import Flask, jsonify, request
 from flask_cors import CORS, cross_origin
 
@@ -7,12 +5,6 @@ from core import get_training_data, predict_price, train_model
 
 app = Flask(__name__)
 CORS(app, support_credentials=True)
-
-print("Training Model ...")
-X, Y = get_training_data()
-locations = list(X.columns[3:])
-regression = train_model(X, Y)
-print("Training Completed")
 
 def validate_data(all_locations, data):
     try:
@@ -45,5 +37,9 @@ def predict_house_price():
     return jsonify({"price": price})
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 33507))
-    app.run(port=port)
+    print("Training Model ...")
+    X, Y = get_training_data()
+    locations = list(X.columns[3:])
+    regression = train_model(X, Y)
+    print("Training Completed")
+    app.run()
